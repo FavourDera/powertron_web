@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Power Bot - Academic Assistant{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-align:center;">Power Bot - Your Academic Assistant</h2>
+    <div id="chatBox"></div>
+    <div style="text-align:center; margin-top:10px;">
+        <input type="text" id="userMessage" placeholder="Ask me anything academic...">
+        <button id="sendBtn" onclick="sendMessage()">Send</button>
+    </div>
+</div>
+{% endblock %}
+
+<script>
+    async function sendMessage() {
+        const userMessage = document.getElementById('userMessage').value;
+        if (!userMessage.trim()) return;
+        const chatBox = document.getElementById('chatBox');
+        chatBox.innerHTML += `<div class='msg-user'><b>You:</b> ${userMessage}</div>`;
+        document.getElementById('userMessage').value = '';
+        const response = await fetch('/powerbot/chat', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({message: userMessage})
+        });
+        const data = await response.json();
+        chatBox.innerHTML += `<div class='msg-bot'><b>Power Bot:</b> ${data.response}</div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('userMessage').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+    });
+</script> 

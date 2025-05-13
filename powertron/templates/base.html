@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Powertron Web{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Floating widget styles */
+        .floating-widget {
+            position: fixed;
+            z-index: 1050;
+            box-shadow: 0 2px 8px #aaa;
+            border-radius: 12px;
+            background: #fff;
+            padding: 0;
+        }
+        #powerbot-widget {
+            bottom: 90px;
+            right: 30px;
+            width: 350px;
+            max-width: 95vw;
+            display: none;
+        }
+        #contact-widget {
+            bottom: 30px;
+            right: 30px;
+            width: 350px;
+            max-width: 95vw;
+            display: none;
+        }
+        .widget-toggle-btn {
+            position: fixed;
+            z-index: 1100;
+            border-radius: 50%;
+            width: 56px;
+            height: 56px;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            box-shadow: 0 2px 8px #aaa;
+        }
+        #powerbot-toggle {
+            bottom: 90px;
+            right: 30px;
+            background: #007bff;
+        }
+        #contact-toggle {
+            bottom: 30px;
+            right: 30px;
+            background: #28a745;
+        }
+        @media (max-width: 500px) {
+            #powerbot-widget, #contact-widget {
+                width: 98vw;
+                right: 1vw;
+            }
+        }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    {% block content %}{% endblock %}
+
+    <!-- Power Bot Floating Widget -->
+    <button id="powerbot-toggle" class="widget-toggle-btn" onclick="toggleWidget('powerbot-widget')">
+        🤖
+    </button>
+    <div id="powerbot-widget" class="floating-widget">
+        <div class="p-3 border-bottom bg-primary text-white d-flex justify-content-between align-items-center">
+            <span>Power Bot</span>
+            <button class="btn-close btn-close-white" onclick="toggleWidget('powerbot-widget')"></button>
+        </div>
+        <div class="p-3" style="height: 300px; overflow-y: auto;" id="chatBox"></div>
+        <div class="p-2 border-top d-flex">
+            <input type="text" id="userMessage" class="form-control me-2" placeholder="Ask me anything academic...">
+            <button class="btn btn-primary" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <!-- Contact Us Floating Widget -->
+    <button id="contact-toggle" class="widget-toggle-btn" onclick="toggleWidget('contact-widget')">
+        ✉️
+    </button>
+    <div id="contact-widget" class="floating-widget">
+        <div class="p-3 border-bottom bg-success text-white d-flex justify-content-between align-items-center">
+            <span>Contact Us</span>
+            <button class="btn-close btn-close-white" onclick="toggleWidget('contact-widget')"></button>
+        </div>
+        <form class="p-3" id="contactForm">
+            <div class="mb-2">
+                <input type="text" class="form-control" name="name" placeholder="Your Name" required>
+            </div>
+            <div class="mb-2">
+                <input type="email" class="form-control" name="email" placeholder="Your Email" required>
+            </div>
+            <div class="mb-2">
+                <textarea class="form-control" name="message" placeholder="Your Message" rows="3" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-success w-100">Send</button>
+            <div id="contactStatus" class="mt-2"></div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleWidget(id) {
+            const widget = document.getElementById(id);
+            widget.style.display = (widget.style.display === 'block') ? 'none' : 'block';
+        }
+        // Power Bot chat logic
+        async function sendMessage() {
+            const userMessage = document.getElementById('userMessage').value;
+            if (!userMessage.trim()) return;
+            const chatBox = document.getElementById('chatBox');
+            chatBox.innerHTML += `<div class='text-end mb-1'><span class='badge bg-secondary'>You:</span> ${userMessage}</div>`;
+            document.getElementById('userMessage').value = '';
+            const response = await fetch('/powerbot/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({message: userMessage})
+            });
+            const data = await response.json();
+            chatBox.innerHTML += `<div class='mb-1'><span class='badge bg-primary'>Power Bot:</span> ${data.response}</div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('userMessage').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') sendMessage();
+            });
+        });
+        // Contact Us form logic
+        document.getElementById('contactForm').onsubmit = async function(e) {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            // Simulate sending message (replace with real API if needed)
+            document.getElementById('contactStatus').innerHTML = '<span class="text-success">Message sent! We will contact you soon.</span>';
+            form.reset();
+        };
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html> 
